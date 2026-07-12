@@ -1,0 +1,29 @@
+# .NET build output
+[Bb]in/
+[Oo]bj/
+
+# Published application and installers
+publish/
+installer-output/
+
+# IDE and user-specific files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Runtime logs and local state
+*.log
+*.tmp
+*.cache
+
+# Sensitive configuration
+.env
+.env.*
+*.pfx
+*.pem
+*.key
+
+# Generated local instructions and diagnostics
+使用说明.txt
