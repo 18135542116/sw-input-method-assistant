@@ -20,7 +20,11 @@ public sealed class InputLanguageController
         return key?.GetValue("Enable") is int enabled && enabled == 1;
     }
 
-    public bool TryApply(IntPtr foregroundWindow, InputTarget target, out string message)
+    public bool TryApply(
+        IntPtr foregroundWindow,
+        InputTarget target,
+        bool allowTsfFallback,
+        out string message)
     {
         if (foregroundWindow == IntPtr.Zero)
         {
@@ -64,7 +68,8 @@ public sealed class InputLanguageController
             return false;
         }
 
-        if (!HasExpectedLayout(inputWindow, target))
+        var hasExpectedLayout = HasExpectedLayout(inputWindow, target);
+        if (!hasExpectedLayout)
         {
             message = target == InputTarget.WeChatChinese
                 ? "中文输入法布局尚未生效，将继续重试。"
@@ -74,13 +79,16 @@ public sealed class InputLanguageController
 
         if (target == InputTarget.WeChatChinese)
         {
-            if (!TryEnableChineseMode(inputWindow))
+            var modeStatus = TryEnableChineseMode(inputWindow);
+            if (!ChineseModeVerification.IsApplied(hasExpectedLayout, modeStatus, allowTsfFallback))
             {
-                message = "微信输入法切换未确认：该另存为窗口没有可验证的输入法上下文，将继续重试。";
+                message = "微信输入法切换未确认：该窗口的输入法状态尚未生效，将继续重试。";
                 return false;
             }
 
-            message = "已确认中文布局和 IME 状态生效。";
+            message = modeStatus == ChineseModeStatus.LegacyImmContextUnavailable
+                ? "已确认中文布局生效；当前输入框无法通过传统 IMM 接口验证中文模式。"
+                : "已确认中文布局和 IME 状态生效。";
             return true;
         }
 
@@ -97,12 +105,12 @@ public sealed class InputLanguageController
         return languageId == expectedLanguageId;
     }
 
-    private static bool TryEnableChineseMode(IntPtr foregroundWindow)
+    private static ChineseModeStatus TryEnableChineseMode(IntPtr foregroundWindow)
     {
         var inputContext = NativeMethods.ImmGetContext(foregroundWindow);
         if (inputContext == IntPtr.Zero)
         {
-            return false;
+            return ChineseModeStatus.LegacyImmContextUnavailable;
         }
 
         try
@@ -110,17 +118,19 @@ public sealed class InputLanguageController
             if (!NativeMethods.ImmSetOpenStatus(inputContext, true)
                 || !NativeMethods.ImmGetConversionStatus(inputContext, out var conversion, out var sentence))
             {
-                return false;
+                return ChineseModeStatus.NotNative;
             }
 
             var desired = conversion | NativeMethods.ImeCmodeNative;
             if (!NativeMethods.ImmSetConversionStatus(inputContext, desired, sentence)
                 || !NativeMethods.ImmGetConversionStatus(inputContext, out var actual, out _))
             {
-                return false;
+                return ChineseModeStatus.NotNative;
             }
 
-            return (actual & NativeMethods.ImeCmodeNative) != 0;
+            return (actual & NativeMethods.ImeCmodeNative) != 0
+                ? ChineseModeStatus.Native
+                : ChineseModeStatus.NotNative;
         }
         finally
         {
@@ -234,4 +244,22 @@ public sealed class InputLanguageController
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool ImmReleaseContext(IntPtr hWnd, IntPtr hIMC);
     }
+}
+
+internal enum ChineseModeStatus
+{
+    LegacyImmContextUnavailable,
+    NotNative,
+    Native,
+}
+
+internal static class ChineseModeVerification
+{
+    public static bool IsApplied(
+        bool hasExpectedLayout,
+        ChineseModeStatus modeStatus,
+        bool allowTsfFallback) =>
+        hasExpectedLayout
+        && (modeStatus == ChineseModeStatus.Native
+            || allowTsfFallback && modeStatus == ChineseModeStatus.LegacyImmContextUnavailable);
 }

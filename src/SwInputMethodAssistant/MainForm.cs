@@ -93,7 +93,11 @@ public sealed class MainForm : Form
             return;
         }
 
-        if (_inputLanguageController.TryApply(foregroundWindow, target, out var result))
+        if (_inputLanguageController.TryApply(
+            foregroundWindow,
+            target,
+            allowTsfFallback: snapshot!.IsFileDialog,
+            out var result))
         {
             if (NativeWindowHandle.GetForegroundWindow() == foregroundWindow)
             {

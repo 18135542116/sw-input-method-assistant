@@ -1,5 +1,5 @@
 #define MyAppName "SW 输入法助手"
-#define MyAppVersion "1.0.4"
+#define MyAppVersion "1.0.5"
 #define MyAppPublisher "白云"
 #define MyAppExeName "SwInputMethodAssistant.exe"
 
@@ -12,7 +12,7 @@ DefaultDirName={autopf}\SW输入法助手
 DefaultGroupName={#MyAppName}
 UninstallDisplayName={#MyAppName}
 OutputDir=installer-output
-OutputBaseFilename=SW输入法助手安装包_v1.0.4
+OutputBaseFilename=SW输入法助手安装包_v1.0.5
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
