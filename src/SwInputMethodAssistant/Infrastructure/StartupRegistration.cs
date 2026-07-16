@@ -22,7 +22,7 @@ public sealed class StartupRegistration
         {
             var executablePath = Environment.ProcessPath
                 ?? throw new InvalidOperationException("无法确定程序启动路径。");
-            key.SetValue(ValueName, $"\"{executablePath}\"");
+            key.SetValue(ValueName, $"\"{executablePath}\" --background");
         }
         else
         {

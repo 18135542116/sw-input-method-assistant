@@ -17,15 +17,22 @@ public sealed class MainForm : Form
     private readonly TextBox _logTextBox = new();
     private bool _isPaused;
     private bool _allowClose;
+    private readonly bool _startHidden;
 
-    public MainForm()
+    public MainForm(bool startHidden = false)
     {
+        _startHidden = startHidden;
         Text = "SW 输入法助手";
         ClientSize = new Size(620, 360);
         MinimumSize = new Size(620, 360);
         StartPosition = FormStartPosition.CenterScreen;
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
+        if (_startHidden)
+        {
+            Opacity = 0;
+            ShowInTaskbar = false;
+        }
 
         _statusLabel.Dock = DockStyle.Top;
         _statusLabel.Height = 48;
@@ -57,6 +64,7 @@ public sealed class MainForm : Form
 
         _timer.Tick += (_, _) => CheckAndSwitch();
         Load += (_, _) => Initialize();
+        Shown += OnShown;
         FormClosing += OnFormClosing;
     }
 
@@ -148,9 +156,22 @@ public sealed class MainForm : Form
 
     private void ShowMainWindow()
     {
+        Opacity = 1;
+        ShowInTaskbar = true;
         Show();
         WindowState = FormWindowState.Normal;
         Activate();
+    }
+
+    private void OnShown(object? sender, EventArgs eventArgs)
+    {
+        if (!_startHidden)
+        {
+            return;
+        }
+
+        Hide();
+        Opacity = 1;
     }
 
     private void ExitApplication()

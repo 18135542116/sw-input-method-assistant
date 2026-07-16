@@ -1,5 +1,5 @@
 #define MyAppName "SW 输入法助手"
-#define MyAppVersion "1.0.3"
+#define MyAppVersion "1.0.4"
 #define MyAppPublisher "白云"
 #define MyAppExeName "SwInputMethodAssistant.exe"
 
@@ -12,7 +12,7 @@ DefaultDirName={autopf}\SW输入法助手
 DefaultGroupName={#MyAppName}
 UninstallDisplayName={#MyAppName}
 OutputDir=installer-output
-OutputBaseFilename=SW输入法助手安装包_v1.0.3
+OutputBaseFilename=SW输入法助手安装包_v1.0.4
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -32,7 +32,7 @@ Name: "{group}\SW 输入法助手"; Filename: "{app}\{#MyAppExeName}"
 Name: "{autodesktop}\SW 输入法助手"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Registry]
-Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "SwInputMethodAssistant"; ValueData: """{app}\{#MyAppExeName}"""; Tasks: autostart; Flags: uninsdeletevalue
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "SwInputMethodAssistant"; ValueData: """{app}\{#MyAppExeName}"" --background"; Tasks: autostart; Flags: uninsdeletevalue
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "立即启动 SW 输入法助手"; Flags: nowait postinstall skipifsilent
